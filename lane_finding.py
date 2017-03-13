@@ -52,7 +52,8 @@ def pipeline(image):
     
                           
     #### APPLYING THRESHOLDS TO IMAGE/FRAME ####
-    
+
+    r_thresh=(205, 255)
     s_thresh=(170, 255)
     sx_thresh=(20, 100)
     
@@ -61,6 +62,8 @@ def pipeline(image):
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS).astype(np.float)   #using HLS color space (L-Channel, S-Channel)
     l_channel = hls[:,:,1]
     s_channel = hls[:,:,2]
+
+    r_channel = img[:,:,0]
     
     sobelx = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0)   #applying sobelx
     abs_sobelx = np.absolute(sobelx)
@@ -69,12 +72,15 @@ def pipeline(image):
     
     sxbinary = np.zeros_like(scaled_sobel)
     sxbinary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 1
+
+    r_binary = np.zeros_like(r_channel)    #using R-Channel for color threshold
+    r_binary[(r_channel >= r_thresh[0]) & (r_channel <= r_thresh[1])] = 1
     
     s_binary = np.zeros_like(s_channel)    #using S-Channel for color threshold
     s_binary[(s_channel >= s_thresh[0]) & (s_channel <= s_thresh[1])] = 1
     
     binary = np.zeros_like(sxbinary)       
-    binary[(s_binary == 1) | (sxbinary == 1)] = 1    #combining both thresholds to one threshold
+    binary[(s_binary == 1) | (sxbinary == 1) | (r_binary == 1)] = 1    #combining the thresholds to one threshold
       
            
     #### APPLYING WARP-FUNCTION ON IMAGE FOR "BIRD-EYE-VIEW" ####       
